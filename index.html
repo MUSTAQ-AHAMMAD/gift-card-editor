@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gift Card Editor - Create personalized Eid gift cards for MATCH, Salfa, and more" />
+  <title data-i18n="appTitle">محرر بطاقات الهدايا</title>
+
+  <!-- Google Fonts: Arabic + English elegant fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- jsPDF for PDF downloads (bundled locally) -->
+  <script src="assets/jspdf.umd.min.js"></script>
+
+  <!-- App Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="rtl">
+
+  <!-- ╔══════════════════════════════════════════╗
+       ║              SITE HEADER                  ║
+       ╚══════════════════════════════════════════╝ -->
+  <header class="site-header" role="banner">
+    <div class="header-inner">
+      <div class="header-brand">
+        <div class="header-icon" aria-hidden="true">🎁</div>
+        <div class="header-titles">
+          <h1 data-i18n="appTitle">محرر بطاقات الهدايا</h1>
+          <p data-i18n="appSubtitle">أنشئ بطاقتك الخاصة وحمّلها</p>
+        </div>
+      </div>
+
+      <!-- Language Toggle -->
+      <button
+        id="lang-toggle"
+        class="lang-btn"
+        aria-label="Toggle language"
+        data-i18n-title="langToggle"
+      >
+        <span class="lang-icon">🌐</span>
+        <span data-i18n="langToggle">English</span>
+      </button>
+    </div>
+    <div class="header-deco" aria-hidden="true"></div>
+  </header>
+
+  <!-- ╔══════════════════════════════════════════╗
+       ║              MAIN CONTENT                  ║
+       ╚══════════════════════════════════════════╝ -->
+  <div class="wrapper">
+    <main class="main-content" role="main">
+
+      <!-- ── 1. Card Selection ── -->
+      <section class="panel" aria-labelledby="select-heading">
+        <h2 id="select-heading" class="section-title">
+          <span class="title-icon" aria-hidden="true">🖼️</span>
+          <span data-i18n="selectCard">اختر تصميم البطاقة</span>
+        </h2>
+        <div id="card-grid" class="card-grid" role="list" aria-label="Card designs">
+          <!-- Dynamically populated by app.js -->
+        </div>
+      </section>
+
+      <!-- ── 2. Name Input ── -->
+      <section class="panel" aria-labelledby="name-heading">
+        <h2 id="name-heading" class="section-title">
+          <span class="title-icon" aria-hidden="true">✍️</span>
+          <span data-i18n="enterName">أدخل اسمك</span>
+        </h2>
+
+        <div class="name-input-wrapper">
+          <input
+            id="name-input"
+            type="text"
+            class="name-input"
+            maxlength="60"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+            aria-label="Your name"
+            data-i18n-placeholder="namePlaceholder"
+            placeholder="اكتب اسمك هنا..."
+          />
+          <button
+            id="clear-btn"
+            class="clear-btn"
+            aria-label="Clear name"
+            data-i18n-title="clearName"
+          >
+            <span data-i18n="clearName">مسح</span>
+          </button>
+        </div>
+
+        <div class="char-count" id="char-count" aria-live="polite">
+          0 <span data-i18n="charCount">حرف</span>
+        </div>
+
+        <div class="input-hint" role="note">
+          <span aria-hidden="true">💡</span>
+          <span data-i18n="nameOnCard">اسمك على البطاقة:</span>
+          <strong id="name-display-hint" aria-live="polite">—</strong>
+        </div>
+      </section>
+
+      <!-- ── 3. Preview ── -->
+      <section id="preview-section" class="panel preview-section" aria-labelledby="preview-heading">
+        <h2 id="preview-heading" class="section-title">
+          <span class="title-icon" aria-hidden="true">👁️</span>
+          <span data-i18n="preview">معاينة البطاقة</span>
+        </h2>
+
+        <div class="preview-container" role="img" aria-label="Card preview">
+          <!-- Placeholder when no card selected -->
+          <div id="preview-placeholder" class="preview-placeholder">
+            <div class="placeholder-icon" aria-hidden="true">🎴</div>
+            <p data-i18n="noCardSelected">اختر تصميماً لعرض المعاينة</p>
+          </div>
+
+          <!-- Live preview canvas -->
+          <canvas
+            id="preview-canvas"
+            aria-hidden="true"
+            role="img"
+            aria-label="Gift card preview"
+          ></canvas>
+        </div>
+      </section>
+
+      <!-- ── 4. Download ── -->
+      <section class="panel download-section" aria-labelledby="download-heading">
+        <h2 id="download-heading" class="section-title">
+          <span class="title-icon" aria-hidden="true">⬇️</span>
+          <span data-i18n="download">تحميل البطاقة</span>
+        </h2>
+
+        <div class="download-buttons">
+          <!-- PDF -->
+          <button
+            id="download-pdf"
+            class="download-btn btn-pdf disabled"
+            disabled
+            aria-label="Download as PDF"
+          >
+            <span class="btn-icon" aria-hidden="true">📄</span>
+            <span data-i18n="downloadPDF">تحميل PDF</span>
+          </button>
+
+          <!-- JPEG -->
+          <button
+            id="download-jpeg"
+            class="download-btn btn-jpeg disabled"
+            disabled
+            aria-label="Download as JPEG"
+          >
+            <span class="btn-icon" aria-hidden="true">🖼️</span>
+            <span data-i18n="downloadJPEG">تحميل JPEG</span>
+          </button>
+
+          <!-- PNG -->
+          <button
+            id="download-png"
+            class="download-btn btn-png disabled"
+            disabled
+            aria-label="Download as PNG"
+          >
+            <span class="btn-icon" aria-hidden="true">🗃️</span>
+            <span data-i18n="downloadPNG">تحميل PNG</span>
+          </button>
+        </div>
+      </section>
+
+    </main><!-- /main-content -->
+
+    <footer class="site-footer" role="contentinfo">
+      <p data-i18n="footer">© ٢٠٢٥ محرر بطاقات الهدايا</p>
+    </footer>
+  </div><!-- /wrapper -->
+
+  <!-- ╔══════════════════════════════════════════╗
+       ║              JAVASCRIPT                    ║
+       ╚══════════════════════════════════════════╝ -->
+  <script src="js/i18n.js"></script>
+  <script src="js/cardRenderer.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- Live name hint updater (small inline script) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var nameInput = document.getElementById('name-input');
+      var nameHint = document.getElementById('name-display-hint');
+      if (nameInput && nameHint) {
+        nameInput.addEventListener('input', function() {
+          nameHint.textContent = nameInput.value.trim() || '—';
+        });
+      }
+    });
+  </script>
+</body>
+</html>
