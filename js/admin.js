@@ -167,7 +167,7 @@ const adminApp = {
 
     const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif', 'application/pdf'];
     if (!validTypes.includes(file.type)) {
-      this.showNotification('Only image files (PNG, JPEG, WebP) and PDF files are supported.', 'error');
+      this.showNotification('Only image files (PNG, JPEG, WebP, GIF) and PDF files are supported.', 'error');
       return;
     }
 

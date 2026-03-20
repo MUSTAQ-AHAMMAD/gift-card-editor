@@ -640,16 +640,10 @@ const cardRenderer = {
           drawBackground: null // set below
         };
 
-        // Build a drawBackground that draws the uploaded image
-        if (design.type === 'pdf') {
-          card.drawBackground = (ctx, w, h) => {
-            cardRenderer._drawImageCard(ctx, w, h, card._imageData);
-          };
-        } else {
-          card.drawBackground = (ctx, w, h) => {
-            cardRenderer._drawImageCard(ctx, w, h, card._imageData);
-          };
-        }
+        // Build a drawBackground that draws the uploaded image (placeholder for sync render path)
+        card.drawBackground = (ctx, w, h) => {
+          cardRenderer._drawImageCard(ctx, w, h);
+        };
         this.cards.push(card);
       });
     } catch (e) {
@@ -657,23 +651,16 @@ const cardRenderer = {
     }
   },
 
-  // ─── Draw an uploaded image as the card background ────────────────────
-  _drawImageCard(ctx, w, h, dataURL) {
-    const img = new Image();
-    img.src = dataURL;
-    // Draw synchronously if already cached/loaded
-    if (img.complete) {
-      ctx.drawImage(img, 0, 0, w, h);
-    } else {
-      // Fallback placeholder while loading
-      ctx.fillStyle = '#FDF6E3';
-      ctx.fillRect(0, 0, w, h);
-      ctx.font = 'bold 60px Amiri, serif';
-      ctx.fillStyle = '#8B6F47';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('...', w / 2, h / 2);
-    }
+  // ─── Draw placeholder for custom image cards in the sync render path ────
+  // (Actual image rendering is handled asynchronously via renderPreview/renderAsync)
+  _drawImageCard(ctx, w, h) {
+    ctx.fillStyle = '#FDF6E3';
+    ctx.fillRect(0, 0, w, h);
+    ctx.font = 'bold 60px Amiri, serif';
+    ctx.fillStyle = '#8B6F47';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🖼️', w / 2, h / 2);
   },
 
   // ─── Async render for image-based cards (handles img.onload) ──────────
