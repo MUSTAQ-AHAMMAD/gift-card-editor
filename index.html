@@ -35,16 +35,25 @@
         </div>
       </div>
 
-      <!-- Language Toggle -->
-      <button
-        id="lang-toggle"
-        class="lang-btn"
-        aria-label="Toggle language"
-        data-i18n-title="langToggle"
-      >
-        <span class="lang-icon">🌐</span>
-        <span data-i18n="langToggle">English</span>
-      </button>
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <!-- Admin Link -->
+        <a href="admin.html" class="admin-link" aria-label="Admin Panel">
+          <span class="admin-icon">⚙️</span>
+          <span data-i18n="adminLink">لوحة الإدارة</span>
+        </a>
+
+        <!-- Language Toggle -->
+        <button
+          id="lang-toggle"
+          class="lang-btn"
+          aria-label="Toggle language"
+          data-i18n-title="langToggle"
+        >
+          <span class="lang-icon">🌐</span>
+          <span data-i18n="langToggle">English</span>
+        </button>
+      </div>
     </div>
     <div class="header-deco" aria-hidden="true"></div>
   </header>
@@ -55,6 +64,17 @@
   <div class="wrapper">
     <main class="main-content" role="main">
 
+      <!-- ── 0. Brand Selection ── -->
+      <section class="panel brand-panel" aria-labelledby="brand-heading">
+        <h2 id="brand-heading" class="section-title">
+          <span class="title-icon" aria-hidden="true">🏷️</span>
+          <span data-i18n="selectBrand">اختر الماركة</span>
+        </h2>
+        <div id="brand-filter" class="brand-filter" role="group" aria-label="Brand filter">
+          <!-- Dynamically populated by app.js -->
+        </div>
+      </section>
+
       <!-- ── 1. Card Selection ── -->
       <section class="panel" aria-labelledby="select-heading">
         <h2 id="select-heading" class="section-title">
@@ -63,6 +83,11 @@
         </h2>
         <div id="card-grid" class="card-grid" role="list" aria-label="Card designs">
           <!-- Dynamically populated by app.js -->
+        </div>
+        <!-- Shown when no brand is selected yet -->
+        <div id="no-brand-hint" class="no-brand-hint" aria-live="polite">
+          <span aria-hidden="true">🏷️</span>
+          <span data-i18n="noBrandSelected">اختر ماركة أولاً لعرض التصاميم</span>
         </div>
       </section>
 

@@ -611,6 +611,100 @@ const cardRenderer = {
     ctx.restore();
   },
 
+  // ─── Load custom cards uploaded by admin from localStorage ───────────
+  loadCustomCards() {
+    try {
+      const stored = localStorage.getItem('gce-custom-designs');
+      if (!stored) return;
+      const customs = JSON.parse(stored);
+      if (!Array.isArray(customs)) return;
+
+      // Remove previously loaded custom cards to avoid duplicates
+      this.cards = this.cards.filter(c => !c._custom);
+
+      customs.forEach(design => {
+        if (!design.id || !design.data) return;
+        const card = {
+          id: design.id,
+          brand: design.brand || 'custom',
+          nameKey: design.nameKey || 'brands.' + design.id,
+          _custom: true,
+          _customName: design.name || design.id,
+          nameArea: design.nameArea || {
+            x: 1000, y: 1700, maxWidth: 1400, fontSize: 68,
+            fontFamily: 'Amiri, Georgia, serif', color: '#3A2A14',
+            align: 'center', direction: 'auto'
+          },
+          bgColor: '#FDF6E3',
+          _imageData: design.data,
+          drawBackground: null // set below
+        };
+
+        // Build a drawBackground that draws the uploaded image
+        if (design.type === 'pdf') {
+          card.drawBackground = (ctx, w, h) => {
+            cardRenderer._drawImageCard(ctx, w, h, card._imageData);
+          };
+        } else {
+          card.drawBackground = (ctx, w, h) => {
+            cardRenderer._drawImageCard(ctx, w, h, card._imageData);
+          };
+        }
+        this.cards.push(card);
+      });
+    } catch (e) {
+      console.warn('Failed to load custom designs:', e);
+    }
+  },
+
+  // ─── Draw an uploaded image as the card background ────────────────────
+  _drawImageCard(ctx, w, h, dataURL) {
+    const img = new Image();
+    img.src = dataURL;
+    // Draw synchronously if already cached/loaded
+    if (img.complete) {
+      ctx.drawImage(img, 0, 0, w, h);
+    } else {
+      // Fallback placeholder while loading
+      ctx.fillStyle = '#FDF6E3';
+      ctx.fillRect(0, 0, w, h);
+      ctx.font = 'bold 60px Amiri, serif';
+      ctx.fillStyle = '#8B6F47';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('...', w / 2, h / 2);
+    }
+  },
+
+  // ─── Async render for image-based cards (handles img.onload) ──────────
+  renderAsync(canvas, cardId, name, callback) {
+    const card = this.cards.find(c => c.id === cardId);
+    if (!card) { if (callback) callback(); return; }
+
+    const ctx = canvas.getContext('2d');
+    canvas.width = this.CANVAS_WIDTH;
+    canvas.height = this.CANVAS_HEIGHT;
+
+    if (card._imageData) {
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, this.CANVAS_WIDTH, this.CANVAS_HEIGHT);
+        if (name && name.trim()) this.drawName(ctx, card, name.trim());
+        if (callback) callback();
+      };
+      img.onerror = () => {
+        card.drawBackground(ctx, this.CANVAS_WIDTH, this.CANVAS_HEIGHT);
+        if (name && name.trim()) this.drawName(ctx, card, name.trim());
+        if (callback) callback();
+      };
+      img.src = card._imageData;
+    } else {
+      card.drawBackground(ctx, this.CANVAS_WIDTH, this.CANVAS_HEIGHT);
+      if (name && name.trim()) this.drawName(ctx, card, name.trim());
+      if (callback) callback();
+    }
+  },
+
   // ─── Main render function ──────────────────────────────────────────────
   render(canvas, cardId, name) {
     const card = this.cards.find(c => c.id === cardId);
@@ -631,10 +725,38 @@ const cardRenderer = {
 
   // ─── Preview render (scaled for display) ──────────────────────────────
   renderPreview(previewCanvas, cardId, name, displaySize) {
+    const card = this.cards.find(c => c.id === cardId);
+    const size = displaySize || 600;
+
+    if (card && card._imageData) {
+      // Async path for uploaded images
+      const img = new Image();
+      img.onload = () => {
+        previewCanvas.width = size;
+        previewCanvas.height = size;
+        const ctx = previewCanvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, size, size);
+        if (name && name.trim()) {
+          // scale nameArea for the preview size
+          const scale = size / this.CANVAS_WIDTH;
+          const scaledCard = Object.assign({}, card, {
+            nameArea: Object.assign({}, card.nameArea, {
+              x: card.nameArea.x * scale,
+              y: card.nameArea.y * scale,
+              maxWidth: card.nameArea.maxWidth * scale,
+              fontSize: card.nameArea.fontSize * scale
+            })
+          });
+          this.drawName(ctx, scaledCard, name.trim());
+        }
+      };
+      img.src = card._imageData;
+      return;
+    }
+
     const offscreen = document.createElement('canvas');
     this.render(offscreen, cardId, name);
 
-    const size = displaySize || 600;
     previewCanvas.width = size;
     previewCanvas.height = size;
     const ctx = previewCanvas.getContext('2d');

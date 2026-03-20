@@ -10,6 +10,9 @@ const i18n = {
     ar: {
       appTitle: 'محرر بطاقات الهدايا',
       appSubtitle: 'أنشئ بطاقتك الخاصة وحمّلها',
+      selectBrand: 'اختر الماركة',
+      selectBrandHint: 'اختر ماركة لعرض تصاميمها',
+      allBrands: 'الكل',
       selectCard: 'اختر تصميم البطاقة',
       enterName: 'أدخل اسمك',
       namePlaceholder: 'اكتب اسمك هنا...',
@@ -22,21 +25,29 @@ const i18n = {
       selectCardFirst: 'الرجاء اختيار تصميم أولاً',
       enterNameFirst: 'الرجاء كتابة اسمك أولاً',
       downloadSuccess: 'تم التحميل بنجاح!',
+      adminLink: 'لوحة الإدارة',
       brands: {
         eid1: 'عيد مبارك - تصميم ١',
         match1: 'ماتش - تصميم ١',
         match2: 'ماتش - تصميم ٢',
-        salfa: 'صالحة - تصميم كلاسيكي'
+        salfa: 'صالحة - تصميم كلاسيكي',
+        eid: 'عيد مبارك',
+        match: 'ماتش',
+        salfa_brand: 'صالحة'
       },
       langToggle: 'English',
       footer: '© ٢٠٢٥ محرر بطاقات الهدايا',
       nameOnCard: 'اسمك على البطاقة:',
       noCardSelected: 'اختر تصميماً لعرض المعاينة',
+      noBrandSelected: 'اختر ماركة أولاً لعرض التصاميم',
       charCount: 'حرف',
     },
     en: {
       appTitle: 'Gift Card Editor',
       appSubtitle: 'Create your personalized gift card and download it',
+      selectBrand: 'Select Brand',
+      selectBrandHint: 'Choose a brand to view its designs',
+      allBrands: 'All',
       selectCard: 'Select Card Design',
       enterName: 'Enter Your Name',
       namePlaceholder: 'Type your name here...',
@@ -49,16 +60,21 @@ const i18n = {
       selectCardFirst: 'Please select a design first',
       enterNameFirst: 'Please enter your name first',
       downloadSuccess: 'Downloaded successfully!',
+      adminLink: 'Admin Panel',
       brands: {
         eid1: 'Eid Mubarak - Design 1',
         match1: 'MATCH - Design 1',
         match2: 'MATCH - Design 2',
-        salfa: 'Salfa - Classic Design'
+        salfa: 'Salfa - Classic Design',
+        eid: 'Eid Mubarak',
+        match: 'MATCH',
+        salfa_brand: 'Salfa'
       },
       langToggle: 'عربي',
       footer: '© 2025 Gift Card Editor',
       nameOnCard: 'Your name on card:',
       noCardSelected: 'Select a design to see preview',
+      noBrandSelected: 'Choose a brand first to see its designs',
       charCount: 'chars',
     }
   },
