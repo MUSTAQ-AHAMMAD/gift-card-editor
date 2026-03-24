@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gift Card Editor Admin Panel - Manage card designs" />
+  <title>Admin Panel — Gift Card Editor</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Admin Styles -->
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+
+  <!-- ╔══════════════════════════════════════════╗
+       ║              ADMIN HEADER                 ║
+       ╚══════════════════════════════════════════╝ -->
+  <header class="admin-header" role="banner">
+    <div class="admin-header-inner">
+      <div class="admin-brand">
+        <div class="admin-brand-icon" aria-hidden="true">⚙️</div>
+        <div>
+          <h1>Admin Panel</h1>
+          <p>Gift Card Editor — Design Management</p>
+        </div>
+      </div>
+      <a href="index.html" class="back-link" aria-label="Back to user page">
+        <span aria-hidden="true">←</span>
+        <span>User Page</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ╔══════════════════════════════════════════╗
+       ║              MAIN CONTENT                 ║
+       ╚══════════════════════════════════════════╝ -->
+  <main class="admin-wrapper" role="main">
+
+    <!-- ── Stats Bar (full width) ── -->
+    <div class="admin-panel full-width" style="padding: 20px 28px;">
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">Total Designs</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-images">0</div>
+          <div class="stat-label">Images</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-pdfs">0</div>
+          <div class="stat-label">PDFs</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-brands">0</div>
+          <div class="stat-label">Brands</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Upload Form ── -->
+    <section class="admin-panel" aria-labelledby="upload-heading">
+      <h2 class="panel-title" id="upload-heading">
+        <span class="panel-icon" aria-hidden="true">📤</span>
+        Upload New Design
+      </h2>
+
+      <form id="upload-form" novalidate>
+
+        <!-- Drop zone -->
+        <div class="upload-zone" id="upload-zone" role="button" aria-label="Upload file" tabindex="0">
+          <input
+            type="file"
+            id="file-input"
+            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,application/pdf"
+            aria-label="Choose design file"
+          />
+          <span class="upload-zone-icon" aria-hidden="true">🖼️</span>
+          <div class="upload-zone-text" id="upload-zone-text">Click or drag &amp; drop your file here</div>
+          <div class="upload-zone-sub">Supports PNG, JPEG, WebP, GIF and PDF &bull; Max 10 MB</div>
+          <div class="upload-zone-preview" id="upload-preview"></div>
+        </div>
+
+        <!-- Design Name -->
+        <div class="form-row">
+          <label class="form-label" for="design-name">
+            <span aria-hidden="true">📝</span> Design Name <span style="color:#E74C3C">*</span>
+          </label>
+          <input
+            type="text"
+            id="design-name"
+            class="form-input"
+            placeholder="e.g. Eid Mubarak Special"
+            maxlength="80"
+            required
+          />
+        </div>
+
+        <!-- Brand -->
+        <div class="form-row">
+          <label class="form-label" for="design-brand">
+            <span aria-hidden="true">🏷️</span> Brand
+          </label>
+          <select id="design-brand" class="form-select">
+            <!-- Populated by admin.js -->
+          </select>
+        </div>
+
+        <!-- New Brand (shown only when __new__ is selected) -->
+        <div class="form-row" id="new-brand-row" style="display:none;">
+          <label class="form-label" for="new-brand-name">
+            <span aria-hidden="true">✨</span> New Brand Name
+          </label>
+          <input
+            type="text"
+            id="new-brand-name"
+            class="form-input"
+            placeholder="e.g. MyBrand"
+            maxlength="40"
+          />
+        </div>
+
+        <!-- Name Position & Size -->
+        <div class="form-row-inline">
+          <div class="form-row" style="margin-bottom:0">
+            <label class="form-label" for="name-pos-y">
+              <span aria-hidden="true">📍</span> Name Y Position
+            </label>
+            <input
+              type="number"
+              id="name-pos-y"
+              class="form-input"
+              value="1700"
+              min="100"
+              max="1950"
+              step="10"
+            />
+            <small style="color:rgba(255,255,255,0.35);font-size:0.75rem;">0–2000 (canvas height)</small>
+          </div>
+
+          <div class="form-row" style="margin-bottom:0">
+            <label class="form-label" for="name-size">
+              <span aria-hidden="true">🔡</span> Font Size
+            </label>
+            <input
+              type="number"
+              id="name-size"
+              class="form-input"
+              value="68"
+              min="24"
+              max="180"
+              step="4"
+            />
+            <small style="color:rgba(255,255,255,0.35);font-size:0.75rem;">Pixels (on 2000×2000 canvas)</small>
+          </div>
+        </div>
+
+        <!-- Name Color -->
+        <div class="form-row">
+          <label class="form-label" for="name-color">
+            <span aria-hidden="true">🎨</span> Name Text Color
+          </label>
+          <div class="color-row">
+            <input type="color" id="name-color" class="form-color" value="#3A2A14" />
+            <span id="name-color-hex" style="color:rgba(255,255,255,0.5);font-size:0.88rem;">#3A2A14</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-upload">
+          <span aria-hidden="true">💾</span>
+          Save Design
+        </button>
+
+      </form>
+    </section>
+
+    <!-- ── Designs List ── -->
+    <section class="admin-panel full-width" aria-labelledby="designs-heading">
+      <h2 class="panel-title" id="designs-heading">
+        <span class="panel-icon" aria-hidden="true">🗂️</span>
+        Uploaded Designs
+      </h2>
+      <div class="designs-grid" id="designs-grid">
+        <!-- Populated by admin.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ╔══════════════════════════════════════════╗
+       ║          IMAGE PREVIEW MODAL              ║
+       ╚══════════════════════════════════════════╝ -->
+  <div class="modal-overlay" id="preview-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <button class="modal-close" id="modal-close" aria-label="Close preview">✕</button>
+      <h3 id="modal-title" style="margin-bottom:14px;color:var(--color-gold);font-size:1.1rem;"></h3>
+      <img class="modal-img" id="modal-preview-img" src="" alt="" />
+      <div id="modal-pdf-msg" class="pdf-preview" style="display:none;">
+        <span class="pdf-preview-icon">📄</span>
+        <span>PDF preview is not available in the browser.<br>The file has been saved and will be available for users.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════════════════╗
+       ║              JAVASCRIPT                   ║
+       ╚══════════════════════════════════════════╝ -->
+  <script>
+    // Live color hex label
+    document.addEventListener('DOMContentLoaded', function() {
+      var colorInput = document.getElementById('name-color');
+      var hexLabel = document.getElementById('name-color-hex');
+      if (colorInput && hexLabel) {
+        colorInput.addEventListener('input', function() {
+          hexLabel.textContent = colorInput.value.toUpperCase();
+        });
+      }
+    });
+  </script>
+  <script src="js/admin.js"></script>
+
+</body>
+</html>

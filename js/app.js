@@ -5,6 +5,7 @@
 
 const app = {
   selectedCard: null,
+  selectedBrand: null,
   name: '',
   previewDebounce: null,
 
@@ -12,17 +13,102 @@ const app = {
     // Apply language from storage
     i18n.init();
 
-    // Build the brand cards grid
+    // Load any admin-uploaded custom designs
+    cardRenderer.loadCustomCards();
+
+    // Build brand filter
+    this.buildBrandFilter();
+
+    // Build the brand cards grid (hidden until brand selected)
     this.buildCardGrid();
 
     // Set up event listeners
     this.setupEvents();
 
-    // Render all thumbnails
-    this.renderThumbnails();
-
     // Initial UI state
     this.updateUI();
+    this.updateBrandFilter();
+  },
+
+  // ─── Build brand filter buttons ────────────────────────────────────────
+  buildBrandFilter() {
+    const container = document.getElementById('brand-filter');
+    if (!container) return;
+    container.innerHTML = '';
+
+    // Collect unique brands (preserve order of first appearance)
+    const seen = new Set();
+    const brands = [];
+    cardRenderer.cards.forEach(card => {
+      if (!seen.has(card.brand)) {
+        seen.add(card.brand);
+        brands.push(card.brand);
+      }
+    });
+
+    brands.forEach(brand => {
+      const btn = document.createElement('button');
+      btn.className = 'brand-btn';
+      btn.dataset.brand = brand;
+      btn.type = 'button';
+
+      const icon = document.createElement('span');
+      icon.className = 'brand-btn-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = this._brandIcon(brand);
+
+      const label = document.createElement('span');
+      label.textContent = this._brandLabel(brand);
+      label.setAttribute('data-brand-label', brand);
+
+      btn.appendChild(icon);
+      btn.appendChild(label);
+      container.appendChild(btn);
+
+      btn.addEventListener('click', () => this.selectBrand(brand));
+    });
+  },
+
+  _brandIcon(brand) {
+    const icons = { eid: '🌙', match: '🏷️', salfa: '🌿' };
+    return icons[brand] || '🎁';
+  },
+
+  _brandLabel(brand) {
+    const keyMap = { eid: 'brands.eid', match: 'brands.match', salfa: 'brands.salfa_brand' };
+    const key = keyMap[brand] || ('brands.' + brand);
+    const translated = i18n.t(key);
+    // If translation not found, just capitalize the brand name
+    return translated !== key ? translated : brand.charAt(0).toUpperCase() + brand.slice(1);
+  },
+
+  selectBrand(brand) {
+    this.selectedBrand = brand;
+    this.selectedCard = null;
+
+    // Update visual state
+    document.querySelectorAll('.brand-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.brand === brand);
+    });
+
+    this.updateBrandFilter();
+    this.buildCardGrid();
+    this.renderThumbnails();
+    this.updatePreview();
+    this.updateUI();
+  },
+
+  updateBrandFilter() {
+    const grid = document.getElementById('card-grid');
+    const hint = document.getElementById('no-brand-hint');
+
+    if (!this.selectedBrand) {
+      if (grid) grid.style.display = 'none';
+      if (hint) hint.style.display = 'flex';
+    } else {
+      if (grid) grid.style.display = 'grid';
+      if (hint) hint.style.display = 'none';
+    }
   },
 
   buildCardGrid() {
@@ -30,13 +116,19 @@ const app = {
     if (!grid) return;
     grid.innerHTML = '';
 
-    cardRenderer.cards.forEach(card => {
+    // Filter cards by selected brand
+    const filteredCards = this.selectedBrand
+      ? cardRenderer.cards.filter(c => c.brand === this.selectedBrand)
+      : [];
+
+    filteredCards.forEach(card => {
       const div = document.createElement('div');
       div.className = 'card-item';
       div.dataset.cardId = card.id;
       div.setAttribute('tabindex', '0');
       div.setAttribute('role', 'button');
-      div.setAttribute('aria-label', i18n.t(card.nameKey));
+      const cardName = card._customName || i18n.t(card.nameKey);
+      div.setAttribute('aria-label', cardName);
 
       const canvasWrapper = document.createElement('div');
       canvasWrapper.className = 'card-thumbnail-wrapper';
@@ -47,7 +139,7 @@ const app = {
 
       const label = document.createElement('div');
       label.className = 'card-label';
-      label.textContent = i18n.t(card.nameKey);
+      label.textContent = cardName;
       label.setAttribute('data-card-label', card.id);
 
       canvasWrapper.appendChild(canvas);
@@ -67,7 +159,11 @@ const app = {
   },
 
   renderThumbnails() {
-    cardRenderer.cards.forEach(card => {
+    const filteredCards = this.selectedBrand
+      ? cardRenderer.cards.filter(c => c.brand === this.selectedBrand)
+      : [];
+
+    filteredCards.forEach(card => {
       const canvas = document.getElementById(`thumb-${card.id}`);
       if (canvas) {
         cardRenderer.renderThumbnail(canvas, card.id);
@@ -87,7 +183,11 @@ const app = {
         document.querySelectorAll('[data-card-label]').forEach(el => {
           const cardId = el.dataset.cardLabel;
           const card = cardRenderer.cards.find(c => c.id === cardId);
-          if (card) el.textContent = i18n.t(card.nameKey);
+          if (card) el.textContent = card._customName || i18n.t(card.nameKey);
+        });
+        // Refresh brand labels
+        document.querySelectorAll('[data-brand-label]').forEach(el => {
+          el.textContent = this._brandLabel(el.dataset.brandLabel);
         });
         this.updatePreview();
       });
@@ -190,6 +290,21 @@ const app = {
     return offscreen;
   },
 
+  getHighResCanvasAsync() {
+    return new Promise(resolve => {
+      const card = cardRenderer.cards.find(c => c.id === this.selectedCard);
+      const offscreen = document.createElement('canvas');
+      if (card && card._imageData) {
+        cardRenderer.renderAsync(offscreen, this.selectedCard, this.name, () => {
+          resolve(offscreen);
+        });
+      } else {
+        cardRenderer.render(offscreen, this.selectedCard, this.name);
+        resolve(offscreen);
+      }
+    });
+  },
+
   generateFilename(ext) {
     const card = cardRenderer.cards.find(c => c.id === this.selectedCard);
     const brand = card ? card.brand : 'gift';
@@ -210,7 +325,7 @@ const app = {
     }
 
     try {
-      const canvas = this.getHighResCanvas();
+      const canvas = await this.getHighResCanvasAsync();
 
       if (format === 'png') {
         this.downloadDataURL(canvas.toDataURL('image/png'), this.generateFilename('png'));
